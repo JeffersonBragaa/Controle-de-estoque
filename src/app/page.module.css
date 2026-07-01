@@ -1,0 +1,199 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-fundo);
+}
+
+.conteudoPrincipal {
+  flex: 1;
+  margin-left: var(--sidebar-largura);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  padding: var(--espaco-3);
+  margin-top: var(--header-altura);
+  max-width: 1200px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.gridDashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.secaoResumo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espaco-3);
+}
+
+.cardResumo {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-card);
+  padding: var(--espaco-3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  font-family: var(--font-family);
+}
+
+.cardTitulo {
+  font-size: var(--font-size-auxiliar);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-texto-secundario);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cardValor {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-primaria);
+  line-height: 1.1;
+}
+
+.cardInfo {
+  font-size: var(--font-size-auxiliar);
+  color: var(--color-texto-secundario);
+  margin-top: 4px;
+}
+
+.subtitulo {
+  font-family: var(--font-family);
+  font-size: var(--font-size-secao);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-texto-principal);
+  margin-bottom: var(--espaco-2);
+}
+
+.botoesAcao {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espaco-3);
+}
+
+.linkAcao {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-card);
+  padding: var(--espaco-3);
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  transition: var(--transicao);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  font-family: var(--font-family);
+}
+
+.linkAcao:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-card);
+  border-color: #9CA3AF;
+}
+
+.linkAcaoIcon {
+  width: 48px;
+  height: 48px;
+  background-color: #EFF6FF;
+  color: var(--color-primaria);
+  font-size: 24px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-botao);
+}
+
+.linkAcao div strong {
+  font-size: var(--font-size-texto);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-texto-principal);
+  display: block;
+}
+
+.linkAcao div p {
+  font-size: var(--font-size-auxiliar);
+  color: var(--color-texto-secundario);
+}
+
+.cabecalhoSecao {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--espaco-2);
+}
+
+.verTodosLink {
+  color: var(--color-primaria);
+  font-family: var(--font-family);
+  font-size: var(--font-size-auxiliar);
+  font-weight: var(--font-weight-semibold);
+  transition: var(--transicao);
+}
+
+.verTodosLink:hover {
+  color: var(--color-secundaria);
+  text-decoration: underline;
+}
+
+.listaUltimos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--espaco-2);
+}
+
+.containerVazio {
+  background-color: var(--color-card);
+  border: 1px dashed var(--color-borda);
+  border-radius: var(--radius-card);
+  padding: var(--espaco-4);
+  text-align: center;
+  color: var(--color-texto-secundario);
+  font-family: var(--font-family);
+  font-size: var(--font-size-texto);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.botaoVazio {
+  margin-top: var(--espaco-1);
+}
+
+.erroContainer {
+  background-color: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-radius: var(--radius-input);
+  padding: var(--espaco-2) var(--espaco-3);
+}
+
+.erroTexto {
+  color: var(--color-erro);
+  font-family: var(--font-family);
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .conteudoPrincipal {
+    margin-left: 0;
+  }
+  .secaoResumo {
+    grid-template-columns: 1fr;
+  }
+  .botoesAcao {
+    grid-template-columns: 1fr;
+  }
+}

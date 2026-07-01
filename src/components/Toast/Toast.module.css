@@ -1,0 +1,65 @@
+.toast {
+  position: fixed;
+  bottom: var(--espaco-3);
+  right: var(--espaco-3);
+  z-index: 2000;
+  border-radius: var(--radius-input);
+  box-shadow: var(--sombra-card);
+  min-width: 280px;
+  max-width: 400px;
+  animation: slideIn var(--transicao);
+}
+
+.conteudo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2);
+  padding: var(--espaco-2) var(--espaco-3);
+  font-family: var(--font-family);
+  font-size: var(--font-size-texto);
+  color: var(--color-card);
+}
+
+.mensagem {
+  font-weight: 500;
+}
+
+.botaoFechar {
+  color: currentColor;
+  font-size: 20px;
+  opacity: 0.8;
+  transition: var(--transicao);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  width: 24px;
+}
+
+.botaoFechar:hover {
+  opacity: 1;
+}
+
+.sucesso {
+  background-color: var(--color-sucesso);
+}
+
+.erro {
+  background-color: var(--color-erro);
+}
+
+.atencao {
+  background-color: var(--color-atencao);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

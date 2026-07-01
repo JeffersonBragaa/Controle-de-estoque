@@ -1,0 +1,18 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  font-family: var(--font-family);
+}
+
+.mensagem {
+  font-size: var(--font-size-texto);
+  color: var(--color-texto-principal);
+  line-height: 1.5;
+}
+
+.acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--espaco-2);
+}

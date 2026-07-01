@@ -1,0 +1,67 @@
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-1);
+  font-family: var(--font-family);
+  font-size: var(--font-size-texto);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--radius-botao);
+  border: 1px solid transparent;
+  transition: var(--transicao);
+  cursor: pointer;
+}
+
+.botao:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.primario {
+  background-color: var(--color-primaria);
+  color: var(--color-card);
+}
+
+.primario:hover:not(:disabled) {
+  background-color: var(--color-secundaria);
+}
+
+.secundario {
+  background-color: var(--color-card);
+  border-color: var(--color-primaria);
+  color: var(--color-primaria);
+}
+
+.secundario:hover:not(:disabled) {
+  background-color: #EFF6FF; /* Fundo azul extremamente claro */
+}
+
+.perigo {
+  background-color: var(--color-erro);
+  color: var(--color-card);
+}
+
+.perigo:hover:not(:disabled) {
+  background-color: #DC2626; /* Vermelho escuro */
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: rotacao 0.75s linear infinite;
+}
+
+.textoLoading {
+  opacity: 0.8;
+}
+
+@keyframes rotacao {
+  to {
+    transform: rotate(360deg);
+  }
+}

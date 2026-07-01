@@ -1,0 +1,110 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-largura);
+  background-color: var(--color-card);
+  border-right: 1px solid var(--color-borda);
+  display: flex;
+  flex-direction: column;
+  z-index: 150;
+  transition: transform var(--transicao);
+}
+
+.cabecalho {
+  height: var(--header-altura);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--espaco-3);
+  border-bottom: 1px solid var(--color-borda);
+}
+
+.logo {
+  font-family: var(--font-family);
+  font-size: var(--font-size-secao);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primaria);
+}
+
+.botaoFechar {
+  display: none;
+  font-size: 28px;
+  color: var(--color-texto-secundario);
+  transition: var(--transicao);
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.botaoFechar:hover {
+  background-color: #F1F5F9;
+  color: var(--color-texto-principal);
+}
+
+.navegacao {
+  display: flex;
+  flex-direction: column;
+  padding: var(--espaco-2);
+  gap: var(--espaco-1);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  padding: var(--espaco-2);
+  border-radius: var(--radius-botao);
+  font-family: var(--font-family);
+  font-size: var(--font-size-texto);
+  font-weight: 500;
+  color: var(--color-texto-secundario);
+  transition: var(--transicao);
+}
+
+.item:hover {
+  background-color: #F8FAFC;
+  color: var(--color-texto-principal);
+}
+
+.ativo {
+  background-color: #EFF6FF !important; /* Azul muito claro */
+  color: var(--color-primaria) !important;
+}
+
+.icone {
+  width: 20px;
+  height: 20px;
+}
+
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 140;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .aberto {
+    transform: translateX(0);
+  }
+  
+  .botaoFechar {
+    display: flex;
+  }
+  
+  .overlay {
+    display: block;
+  }
+}

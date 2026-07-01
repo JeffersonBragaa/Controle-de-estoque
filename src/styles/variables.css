@@ -1,0 +1,81 @@
+/* =============================================================
+   variables.css — Sistema de Design: Controle de Estoque
+   Referência oficial: DESIGN.md
+   Nunca repetir valores fixos em outros arquivos.
+   ============================================================= */
+
+:root {
+
+  /* ───────────────────────────────────────
+     Cores
+  ─────────────────────────────────────── */
+
+  --color-primaria:        #2563EB;
+  --color-secundaria:      #1E40AF;
+
+  --color-fundo:           #F8FAFC;
+  --color-card:            #FFFFFF;
+
+  --color-texto-principal: #1F2937;
+  --color-texto-secundario: #6B7280;
+
+  --color-borda:           #E5E7EB;
+
+  --color-sucesso:         #22C55E;
+  --color-erro:            #EF4444;
+  --color-atencao:         #F59E0B;
+
+  /* ───────────────────────────────────────
+     Tipografia
+  ─────────────────────────────────────── */
+
+  --font-family:           var(--font-inter), Arial, sans-serif;
+
+  --font-size-titulo:      32px;   /* Título principal  — peso 600 */
+  --font-size-subtitulo:   24px;   /* Título secundário — peso 600 */
+  --font-size-secao:       20px;   /* Título de seção   — peso 600 */
+  --font-size-texto:       16px;   /* Texto base        — peso 400 */
+  --font-size-auxiliar:    14px;   /* Texto auxiliar    — peso 400 */
+
+  --font-weight-normal:    400;
+  --font-weight-semibold:  600;
+
+  /* ───────────────────────────────────────
+     Espaçamentos (múltiplos de 8)
+  ─────────────────────────────────────── */
+
+  --espaco-1:  8px;
+  --espaco-2:  16px;
+  --espaco-3:  24px;
+  --espaco-4:  32px;
+  --espaco-5:  40px;
+  --espaco-6:  48px;
+
+  /* ───────────────────────────────────────
+     Bordas (border-radius)
+  ─────────────────────────────────────── */
+
+  --radius-input:  10px;
+  --radius-botao:  10px;
+  --radius-card:   14px;
+  --radius-modal:  16px;
+
+  /* ───────────────────────────────────────
+     Sombras
+  ─────────────────────────────────────── */
+
+  --sombra-card:  0 1px 4px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.06);
+
+  /* ───────────────────────────────────────
+     Transições
+  ─────────────────────────────────────── */
+
+  --transicao:     200ms ease;
+
+  /* ───────────────────────────────────────
+     Layout
+  ─────────────────────────────────────── */
+
+  --sidebar-largura:  260px;
+  --header-altura:    70px;
+}

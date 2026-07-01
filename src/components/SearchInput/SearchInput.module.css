@@ -1,0 +1,48 @@
+.container {
+  position: relative;
+  width: 100%;
+  font-family: var(--font-family);
+}
+
+.input {
+  width: 100%;
+  font-family: var(--font-family);
+  font-size: var(--font-size-texto);
+  color: var(--color-texto-principal);
+  padding: var(--espaco-2) var(--espaco-2) var(--espaco-2) var(--espaco-5);
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-input);
+  background-color: var(--color-card);
+  transition: var(--transicao);
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--color-texto-secundario);
+  opacity: 0.6;
+}
+
+.input:hover {
+  border-color: #9CA3AF;
+}
+
+.input:focus {
+  border-color: var(--color-primaria);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.iconeLupa {
+  position: absolute;
+  left: var(--espaco-2);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: var(--color-texto-secundario);
+  pointer-events: none;
+  transition: var(--transicao);
+}
+
+.input:focus + .iconeLupa {
+  color: var(--color-primaria);
+}

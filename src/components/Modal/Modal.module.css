@@ -1,0 +1,83 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--espaco-2);
+  animation: fadeIn var(--transicao);
+}
+
+.modal {
+  background-color: var(--color-card);
+  border-radius: var(--radius-modal);
+  box-shadow: var(--sombra-card);
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  outline: none;
+  animation: slideUp var(--transicao);
+}
+
+.cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--espaco-2) var(--espaco-3);
+  border-bottom: 1px solid var(--color-borda);
+}
+
+.titulo {
+  font-family: var(--font-family);
+  font-size: var(--font-size-secao);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-texto-principal);
+}
+
+.botaoFechar {
+  font-size: 28px;
+  color: var(--color-texto-secundario);
+  transition: var(--transicao);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.botaoFechar:hover {
+  background-color: #F1F5F9;
+  color: var(--color-texto-principal);
+}
+
+.conteudo {
+  padding: var(--espaco-3);
+  overflow-y: auto;
+  font-family: var(--font-family);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
