@@ -1,5 +1,6 @@
 export { default as Button } from './Button';
 export { default as Input } from './Input';
+export { default as Select } from './Select';
 export { default as Modal } from './Modal';
 export { default as Toast } from './Toast';
 export { default as Loader } from './Loader';
@@ -10,9 +11,11 @@ export { default as Sidebar } from './Sidebar';
 export { default as ProductCard } from './ProductCard';
 export { default as ProductForm } from './ProductForm';
 export { default as ProductList } from './ProductList';
+export { default as LocationManager } from './LocationManager';
 
 export type { ButtonProps } from './Button';
 export type { InputProps } from './Input';
+export type { SelectProps, SelectOption } from './Select';
 export type { ModalProps } from './Modal';
 export type { ToastProps } from './Toast';
 export type { LoaderProps } from './Loader';
@@ -23,3 +26,5 @@ export type { SidebarProps } from './Sidebar';
 export type { ProductCardProps } from './ProductCard';
 export type { ProductFormProps } from './ProductForm';
 export type { ProductListProps } from './ProductList';
+export type { LocationManagerProps } from './LocationManager';
+

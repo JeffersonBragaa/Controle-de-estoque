@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { ProdutoFormData } from '@/types';
+import type { Local, Corredor, Gaveta } from '@/types';
 import Input from '../Input';
+import Select from '../Select';
+import type { SelectOption } from '../Select';
 import Button from '../Button';
 import ConfirmDialog from '../ConfirmDialog';
 import styles from './ProductForm.module.css';
@@ -30,19 +33,120 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [erros, setErros] = useState<Partial<Record<keyof ProdutoFormData, string>>>({});
   const [modalConfirmacaoAberto, setModalConfirmacaoAberto] = useState(false);
 
-  useEffect(() => {
-    if (dadosIniciais) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setForm({
-        nome: dadosIniciais.nome || '',
-        quantidade: dadosIniciais.quantidade !== undefined ? dadosIniciais.quantidade : 0,
-        local: dadosIniciais.local || '',
-        corredor: dadosIniciais.corredor || '',
-        gaveta: dadosIniciais.gaveta || '',
-        observacao: dadosIniciais.observacao || '',
-      });
+  // Listas de opções para os selects
+  const [locais, setLocais] = useState<Local[]>([]);
+  const [corredores, setCorredores] = useState<Corredor[]>([]);
+  const [gavetas, setGavetas] = useState<Gaveta[]>([]);
+
+  // IDs selecionados (para carregar cascata)
+  const [localSelecionadoId, setLocalSelecionadoId] = useState('');
+  const [corredorSelecionadoId, setCorredorSelecionadoId] = useState('');
+
+  // Controle para evitar reset durante inicialização de edição
+  const [inicializado, setInicializado] = useState(false);
+
+  // Carregar locais ao montar
+  const carregarLocais = useCallback(async () => {
+    try {
+      const resposta = await fetch('/api/locais');
+      const json = await resposta.json();
+      if (json.success) {
+        setLocais(json.data || []);
+        return json.data || [];
+      }
+    } catch {
+      // silencioso
     }
-  }, [dadosIniciais]);
+    return [];
+  }, []);
+
+  // Carregar corredores por local
+  const carregarCorredores = useCallback(async (localId: string) => {
+    if (!localId) {
+      setCorredores([]);
+      return [];
+    }
+    try {
+      const resposta = await fetch(`/api/corredores?localId=${localId}`);
+      const json = await resposta.json();
+      if (json.success) {
+        setCorredores(json.data || []);
+        return json.data || [];
+      }
+    } catch {
+      // silencioso
+    }
+    return [];
+  }, []);
+
+  // Carregar gavetas por corredor
+  const carregarGavetas = useCallback(async (corredorId: string) => {
+    if (!corredorId) {
+      setGavetas([]);
+      return [];
+    }
+    try {
+      const resposta = await fetch(`/api/gavetas?corredorId=${corredorId}`);
+      const json = await resposta.json();
+      if (json.success) {
+        setGavetas(json.data || []);
+        return json.data || [];
+      }
+    } catch {
+      // silencioso
+    }
+    return [];
+  }, []);
+
+  // Inicialização
+  useEffect(() => {
+    const inicializar = async () => {
+      const locaisCarregados = await carregarLocais();
+
+      if (dadosIniciais) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setForm({
+          nome: dadosIniciais.nome || '',
+          quantidade: dadosIniciais.quantidade !== undefined ? dadosIniciais.quantidade : 0,
+          local: dadosIniciais.local || '',
+          corredor: dadosIniciais.corredor || '',
+          gaveta: dadosIniciais.gaveta || '',
+          observacao: dadosIniciais.observacao || '',
+        });
+
+        // Encontrar o local pelo nome para carregar corredores
+        const localEncontrado = locaisCarregados.find(
+          (l: Local) => l.nome.toLowerCase() === (dadosIniciais.local || '').toLowerCase()
+        );
+
+        if (localEncontrado) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setLocalSelecionadoId(localEncontrado.id);
+          const corredoresCarregados = await carregarCorredores(localEncontrado.id);
+
+          const corredorEncontrado = corredoresCarregados.find(
+            (c: Corredor) => c.nome.toLowerCase() === (dadosIniciais.corredor || '').toLowerCase()
+          );
+
+          if (corredorEncontrado) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setCorredorSelecionadoId(corredorEncontrado.id);
+            await carregarGavetas(corredorEncontrado.id);
+          }
+        }
+      }
+
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setInicializado(true);
+    };
+
+    inicializar();
+  }, [dadosIniciais, carregarLocais, carregarCorredores, carregarGavetas]);
+
+  // Opções dos selects
+  const locaisOptions: SelectOption[] = locais.map((l) => ({ value: l.nome, label: l.nome }));
+  const corredoresOptions: SelectOption[] = corredores.map((c) => ({ value: c.nome, label: c.nome }));
+  const gavetasOptions: SelectOption[] = gavetas.map((g) => ({ value: g.nome, label: g.nome }));
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -63,6 +167,50 @@ const ProductForm: React.FC<ProductFormProps> = ({
         ...prev,
         [name]: undefined,
       }));
+    }
+  };
+
+  const handleSelectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    if (erros[name as keyof ProdutoFormData]) {
+      setErros((prev) => ({
+        ...prev,
+        [name]: undefined,
+      }));
+    }
+
+    if (name === 'local' && inicializado) {
+      // Ao mudar local: encontrar o ID, carregar corredores, limpar corredor e gaveta
+      const localObj = locais.find((l) => l.nome === value);
+      if (localObj) {
+        setLocalSelecionadoId(localObj.id);
+        await carregarCorredores(localObj.id);
+      } else {
+        setLocalSelecionadoId('');
+        setCorredores([]);
+      }
+      setCorredorSelecionadoId('');
+      setGavetas([]);
+      setForm((prev) => ({ ...prev, corredor: '', gaveta: '' }));
+    }
+
+    if (name === 'corredor' && inicializado) {
+      // Ao mudar corredor: encontrar o ID, carregar gavetas, limpar gaveta
+      const corredorObj = corredores.find((c) => c.nome === value);
+      if (corredorObj) {
+        setCorredorSelecionadoId(corredorObj.id);
+        await carregarGavetas(corredorObj.id);
+      } else {
+        setCorredorSelecionadoId('');
+        setGavetas([]);
+      }
+      setForm((prev) => ({ ...prev, gaveta: '' }));
     }
   };
 
@@ -117,7 +265,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
   };
 
-  const handleDesfazer = () => {
+  const handleDesfazer = async () => {
     if (dadosIniciais) {
       setForm({
         nome: dadosIniciais.nome || '',
@@ -127,6 +275,30 @@ const ProductForm: React.FC<ProductFormProps> = ({
         gaveta: dadosIniciais.gaveta || '',
         observacao: dadosIniciais.observacao || '',
       });
+
+      // Recarregar selects encadeados
+      const localObj = locais.find(
+        (l) => l.nome.toLowerCase() === (dadosIniciais.local || '').toLowerCase()
+      );
+      if (localObj) {
+        setLocalSelecionadoId(localObj.id);
+        const corredoresCarregados = await carregarCorredores(localObj.id);
+        const corredorObj = corredoresCarregados.find(
+          (c: Corredor) => c.nome.toLowerCase() === (dadosIniciais.corredor || '').toLowerCase()
+        );
+        if (corredorObj) {
+          setCorredorSelecionadoId(corredorObj.id);
+          await carregarGavetas(corredorObj.id);
+        } else {
+          setCorredorSelecionadoId('');
+          setGavetas([]);
+        }
+      } else {
+        setLocalSelecionadoId('');
+        setCorredores([]);
+        setCorredorSelecionadoId('');
+        setGavetas([]);
+      }
     } else {
       setForm({
         nome: '',
@@ -136,6 +308,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
         gaveta: '',
         observacao: '',
       });
+      setLocalSelecionadoId('');
+      setCorredorSelecionadoId('');
+      setCorredores([]);
+      setGavetas([]);
     }
     setErros({});
   };
@@ -165,35 +341,38 @@ const ProductForm: React.FC<ProductFormProps> = ({
         disabled={carregando}
       />
       <div className={styles.grupoLocalizacao}>
-        <Input
+        <Select
           label="Local/Setor"
           name="local"
           value={form.local}
-          onChange={handleChange}
-          placeholder="Ex: Depósito A"
+          onChange={handleSelectChange}
+          options={locaisOptions}
+          placeholder="Selecione o local"
           erro={erros.local}
           required
           disabled={carregando}
         />
-        <Input
+        <Select
           label="Corredor"
           name="corredor"
           value={form.corredor}
-          onChange={handleChange}
-          placeholder="Ex: Corredor 3"
+          onChange={handleSelectChange}
+          options={corredoresOptions}
+          placeholder="Selecione o corredor"
           erro={erros.corredor}
           required
-          disabled={carregando}
+          disabled={carregando || !form.local}
         />
-        <Input
+        <Select
           label="Gaveta/Prateleira"
           name="gaveta"
           value={form.gaveta}
-          onChange={handleChange}
-          placeholder="Ex: Gaveta B"
+          onChange={handleSelectChange}
+          options={gavetasOptions}
+          placeholder="Selecione a gaveta"
           erro={erros.gaveta}
           required
-          disabled={carregando}
+          disabled={carregando || !form.corredor}
         />
       </div>
       <Input
@@ -240,3 +419,4 @@ const ProductForm: React.FC<ProductFormProps> = ({
 };
 
 export default ProductForm;
+
