@@ -12,6 +12,13 @@ const Modal: React.FC<ModalProps> = ({ aberto, onFechar, titulo, children }) => 
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (aberto) {
+      // Focus trap simples: focar no modal ao abrir apenas uma vez
+      modalRef.current?.focus();
+    }
+  }, [aberto]);
+
+  useEffect(() => {
     const lidarComEsc = (evento: KeyboardEvent) => {
       if (evento.key === 'Escape') {
         onFechar();
@@ -21,9 +28,6 @@ const Modal: React.FC<ModalProps> = ({ aberto, onFechar, titulo, children }) => 
     if (aberto) {
       document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', lidarComEsc);
-      
-      // Focus trap simples: focar no modal ao abrir
-      modalRef.current?.focus();
     }
 
     return () => {
