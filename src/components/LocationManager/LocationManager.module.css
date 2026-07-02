@@ -4,6 +4,7 @@
   gap: var(--espaco-3);
   font-family: var(--font-family);
   width: 100%;
+  min-width: 0;
 }
 
 /* Abas */
@@ -11,6 +12,7 @@
   display: flex;
   gap: 0;
   border-bottom: 2px solid var(--color-borda);
+  max-width: 100%;
 }
 
 .aba {

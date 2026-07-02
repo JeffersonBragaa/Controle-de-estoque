@@ -37,4 +37,13 @@
   .conteudoPrincipal {
     margin-left: 0;
   }
+
+  .main {
+    padding: var(--espaco-2);
+    gap: var(--espaco-2);
+  }
+
+  .cardGerenciamento {
+    padding: var(--espaco-2);
+  }
 }
