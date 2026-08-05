@@ -1,0 +1,100 @@
+.pagina {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1E3A5F 0%, #2563EB 50%, #1E40AF 100%);
+  padding: var(--espaco-2);
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--color-card);
+  border-radius: var(--radius-modal);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: var(--espaco-5);
+  animation: surgir 0.4s ease-out;
+}
+
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cabecalho {
+  text-align: center;
+  margin-bottom: var(--espaco-4);
+}
+
+.logo {
+  font-size: var(--font-size-subtitulo);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primaria);
+  display: block;
+  margin-bottom: var(--espaco-1);
+}
+
+.subtitulo {
+  font-size: var(--font-size-auxiliar);
+  color: var(--color-texto-secundario);
+  font-weight: var(--font-weight-normal);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.erro {
+  background-color: #FEF2F2;
+  color: var(--color-erro);
+  border: 1px solid #FECACA;
+  border-radius: var(--radius-input);
+  padding: var(--espaco-1) var(--espaco-2);
+  font-size: var(--font-size-auxiliar);
+  text-align: center;
+  animation: surgir 0.3s ease-out;
+}
+
+.sucesso {
+  background-color: #F0FDF4;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+  border-radius: var(--radius-input);
+  padding: var(--espaco-1) var(--espaco-2);
+  font-size: var(--font-size-auxiliar);
+  text-align: center;
+  animation: surgir 0.3s ease-out;
+}
+
+.rodape {
+  text-align: center;
+  margin-top: var(--espaco-3);
+}
+
+.link {
+  color: var(--color-primaria);
+  font-size: var(--font-size-auxiliar);
+  font-weight: var(--font-weight-semibold);
+  transition: var(--transicao);
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--color-secundaria);
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: var(--espaco-3);
+  }
+}
