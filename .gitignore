@@ -57,3 +57,8 @@ CLAUDE.md
 # SO
 .DS_Store
 Thumbs.db
+*:Zone.Identifier
+
+# Scripts de teste/debug na raiz
+test-*.mjs
+test-*.js
