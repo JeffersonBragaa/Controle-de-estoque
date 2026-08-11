@@ -12,6 +12,12 @@
   gap: var(--espaco-2);
 }
 
+.grupoLinhaDupla {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espaco-2);
+}
+
 .botoes {
   display: flex;
   flex-direction: row;

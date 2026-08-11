@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { ProdutoFormData } from '@/types';
 import type { Local, Corredor, Gaveta } from '@/types';
+import { fetchAutenticado } from '@/contexts/AuthContext';
 import Input from '../Input';
 import Select from '../Select';
 import type { SelectOption } from '../Select';
@@ -23,6 +24,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
 }) => {
   const [form, setForm] = useState<ProdutoFormData>({
     nome: '',
+    descricao: '',
+    preco: undefined,
     quantidade: 0,
     local: '',
     corredor: '',
@@ -39,8 +42,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [gavetas, setGavetas] = useState<Gaveta[]>([]);
 
   // IDs selecionados (para carregar cascata)
-  const [localSelecionadoId, setLocalSelecionadoId] = useState('');
-  const [corredorSelecionadoId, setCorredorSelecionadoId] = useState('');
+  const [, setLocalSelecionadoId] = useState('');
+  const [, setCorredorSelecionadoId] = useState('');
 
   // Controle para evitar reset durante inicialização de edição
   const [inicializado, setInicializado] = useState(false);
@@ -48,7 +51,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   // Carregar locais ao montar
   const carregarLocais = useCallback(async () => {
     try {
-      const resposta = await fetch('/api/locais');
+      const resposta = await fetchAutenticado('/api/locais');
       const json = await resposta.json();
       if (json.success) {
         setLocais(json.data || []);
@@ -67,7 +70,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       return [];
     }
     try {
-      const resposta = await fetch(`/api/corredores?localId=${localId}`);
+      const resposta = await fetchAutenticado(`/api/corredores?localId=${localId}`);
       const json = await resposta.json();
       if (json.success) {
         setCorredores(json.data || []);
@@ -86,7 +89,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       return [];
     }
     try {
-      const resposta = await fetch(`/api/gavetas?corredorId=${corredorId}`);
+      const resposta = await fetchAutenticado(`/api/gavetas?corredorId=${corredorId}`);
       const json = await resposta.json();
       if (json.success) {
         setGavetas(json.data || []);
@@ -104,9 +107,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
       const locaisCarregados = await carregarLocais();
 
       if (dadosIniciais) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setForm({
           nome: dadosIniciais.nome || '',
+          descricao: dadosIniciais.descricao || '',
+          preco: dadosIniciais.preco !== undefined && dadosIniciais.preco !== null ? dadosIniciais.preco : undefined,
           quantidade: dadosIniciais.quantidade !== undefined ? dadosIniciais.quantidade : 0,
           local: dadosIniciais.local || '',
           corredor: dadosIniciais.corredor || '',
@@ -120,7 +124,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
         );
 
         if (localEncontrado) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
           setLocalSelecionadoId(localEncontrado.id);
           const corredoresCarregados = await carregarCorredores(localEncontrado.id);
 
@@ -129,14 +132,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
           );
 
           if (corredorEncontrado) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCorredorSelecionadoId(corredorEncontrado.id);
             await carregarGavetas(corredorEncontrado.id);
           }
         }
       }
 
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInicializado(true);
     };
 
@@ -151,10 +152,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
-    let valorConvertido: string | number = value;
+    let valorConvertido: string | number | undefined = value;
     if (name === 'quantidade') {
       const num = parseInt(value, 10);
       valorConvertido = isNaN(num) ? 0 : num;
+    } else if (name === 'preco') {
+      if (value === '' || value === undefined || value === null) {
+        valorConvertido = undefined;
+      } else {
+        const floatVal = parseFloat(value);
+        valorConvertido = isNaN(floatVal) ? undefined : floatVal;
+      }
     }
 
     setForm((prev) => ({
@@ -186,7 +194,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
 
     if (name === 'local' && inicializado) {
-      // Ao mudar local: encontrar o ID, carregar corredores, limpar corredor e gaveta
       const localObj = locais.find((l) => l.nome === value);
       if (localObj) {
         setLocalSelecionadoId(localObj.id);
@@ -201,7 +208,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
 
     if (name === 'corredor' && inicializado) {
-      // Ao mudar corredor: encontrar o ID, carregar gavetas, limpar gaveta
       const corredorObj = corredores.find((c) => c.nome === value);
       if (corredorObj) {
         setCorredorSelecionadoId(corredorObj.id);
@@ -218,11 +224,22 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const novosErros: Partial<Record<keyof ProdutoFormData, string>> = {};
 
     if (!form.nome.trim()) novosErros.nome = 'O nome do produto é obrigatório.';
+    if (form.nome.trim().length > 255) novosErros.nome = 'O nome não pode exceder 255 caracteres.';
+
     if (form.quantidade === undefined || form.quantidade === null) {
       novosErros.quantidade = 'A quantidade é obrigatória.';
     } else if (form.quantidade < 0) {
       novosErros.quantidade = 'A quantidade deve ser maior ou igual a zero.';
     }
+
+    if (form.preco !== undefined && form.preco !== null) {
+      if (typeof form.preco !== 'number' || isNaN(form.preco)) {
+        novosErros.preco = 'O preço deve ser um valor numérico válido.';
+      } else if (form.preco < 0) {
+        novosErros.preco = 'O preço não pode ser negativo.';
+      }
+    }
+
     if (!form.local.trim()) novosErros.local = 'O local de armazenamento é obrigatório.';
     if (!form.corredor.trim()) novosErros.corredor = 'O corredor é obrigatório.';
     if (!form.gaveta.trim()) novosErros.gaveta = 'A gaveta é obrigatória.';
@@ -241,6 +258,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const temAlteracoes = (): boolean => {
     const base = dadosIniciais || {
       nome: '',
+      descricao: '',
+      preco: undefined,
       quantidade: 0,
       local: '',
       corredor: '',
@@ -249,6 +268,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
     };
     return (
       form.nome.trim() !== (base.nome || '').trim() ||
+      (form.descricao || '').trim() !== (base.descricao || '').trim() ||
+      form.preco !== base.preco ||
       form.quantidade !== (base.quantidade || 0) ||
       form.local.trim() !== (base.local || '').trim() ||
       form.corredor.trim() !== (base.corredor || '').trim() ||
@@ -269,6 +290,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
     if (dadosIniciais) {
       setForm({
         nome: dadosIniciais.nome || '',
+        descricao: dadosIniciais.descricao || '',
+        preco: dadosIniciais.preco !== undefined ? dadosIniciais.preco : undefined,
         quantidade: dadosIniciais.quantidade || 0,
         local: dadosIniciais.local || '',
         corredor: dadosIniciais.corredor || '',
@@ -276,7 +299,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
         observacao: dadosIniciais.observacao || '',
       });
 
-      // Recarregar selects encadeados
       const localObj = locais.find(
         (l) => l.nome.toLowerCase() === (dadosIniciais.local || '').toLowerCase()
       );
@@ -302,6 +324,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
     } else {
       setForm({
         nome: '',
+        descricao: '',
+        preco: undefined,
         quantidade: 0,
         local: '',
         corredor: '',
@@ -323,23 +347,49 @@ const ProductForm: React.FC<ProductFormProps> = ({
         name="nome"
         value={form.nome}
         onChange={handleChange}
-        placeholder="Ex: Parafuso Philips M5"
+        placeholder="Ex: Tênis Esportivo / Celular X / Camiseta M"
         erro={erros.nome}
         required
         disabled={carregando}
       />
+
       <Input
-        label="Quantidade em Estoque"
-        name="quantidade"
-        type="number"
-        min="0"
-        value={form.quantidade}
+        label="Descrição do Produto (Opcional)"
+        name="descricao"
+        value={form.descricao || ''}
         onChange={handleChange}
-        placeholder="Ex: 150"
-        erro={erros.quantidade}
-        required
+        placeholder="Ex: Marca, modelo, cor, especificações técnicas..."
+        textarea
         disabled={carregando}
       />
+
+      <div className={styles.grupoLinhaDupla}>
+        <Input
+          label="Preço R$ (Opcional)"
+          name="preco"
+          type="number"
+          step="0.01"
+          min="0"
+          value={form.preco !== undefined && form.preco !== null ? form.preco : ''}
+          onChange={handleChange}
+          placeholder="Ex: 99.90"
+          erro={erros.preco}
+          disabled={carregando}
+        />
+        <Input
+          label="Quantidade em Estoque"
+          name="quantidade"
+          type="number"
+          min="0"
+          value={form.quantidade}
+          onChange={handleChange}
+          placeholder="Ex: 50"
+          erro={erros.quantidade}
+          required
+          disabled={carregando}
+        />
+      </div>
+
       <div className={styles.grupoLocalizacao}>
         <Select
           label="Local/Setor"
@@ -375,12 +425,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
           disabled={carregando || !form.corredor}
         />
       </div>
+
       <Input
         label="Observações Adicionais (Opcional)"
         name="observacao"
         value={form.observacao || ''}
         onChange={handleChange}
-        placeholder="Especificações do produto, fornecedor ou detalhes de localização..."
+        placeholder="Especificações internas, lote, fornecedor..."
         textarea
         disabled={carregando}
       />
@@ -419,4 +470,5 @@ const ProductForm: React.FC<ProductFormProps> = ({
 };
 
 export default ProductForm;
+
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Produto, ProdutoFormData } from '@/types';
 import { 
   Header, 
@@ -14,14 +14,17 @@ import {
   ConfirmDialog, 
   Toast 
 } from '@/components';
-import { useSearch, useToast } from '@/hooks';
-import { formatarData, formatarQuantidade } from '@/utils';
+import { useSearch, useToast, useAuth } from '@/hooks';
+import { fetchAutenticado } from '@/contexts/AuthContext';
+import { formatarData, formatarQuantidade, formatarPreco } from '@/utils';
 import styles from './page.module.css';
 
 export default function ConsultarProdutos() {
+  const { usuario } = useAuth();
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [incluirInativos, setIncluirInativos] = useState(false);
   
   // UI States
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -38,26 +41,32 @@ export default function ConsultarProdutos() {
   // Hook de busca
   const { termoBusca, setTermoBusca, produtosFiltrados } = useSearch(produtos);
 
-  const carregarProdutos = async () => {
+  const eGerenteOuSuperior = usuario && (usuario.role === 'ADMIN' || usuario.role === 'GERENTE');
+  const eFuncionarioOuSuperior = usuario && (usuario.role === 'ADMIN' || usuario.role === 'GERENTE' || usuario.role === 'FUNCIONARIO');
+
+  const carregarProdutos = useCallback(async () => {
     try {
-      const resposta = await fetch('/api/produtos');
+      setCarregando(true);
+      setErro(null);
+      const url = incluirInativos && eGerenteOuSuperior ? '/api/produtos?incluirInativos=true' : '/api/produtos';
+      const resposta = await fetchAutenticado(url);
       const json = await resposta.json();
       if (json.success) {
         setProdutos(json.data || []);
       } else {
-        setErro(json.message);
+        setErro(json.message || 'Erro ao carregar os produtos.');
       }
     } catch {
       setErro('Erro ao se conectar ao servidor.');
     } finally {
       setCarregando(false);
     }
-  };
+  }, [incluirInativos, eGerenteOuSuperior]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     carregarProdutos();
-  }, []);
+  }, [carregarProdutos]);
 
   const handleSelecionarProduto = (produto: Produto) => {
     setProdutoSelecionado(produto);
@@ -78,7 +87,7 @@ export default function ConsultarProdutos() {
     if (!produtoSelecionado) return;
     setAcaoCarregando(true);
     try {
-      const resposta = await fetch(`/api/produtos/${produtoSelecionado.id}`, {
+      const resposta = await fetchAutenticado(`/api/produtos/${produtoSelecionado.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +114,7 @@ export default function ConsultarProdutos() {
     if (!produtoSelecionado) return;
     setAcaoCarregando(true);
     try {
-      const resposta = await fetch(`/api/produtos/${produtoSelecionado.id}`, {
+      const resposta = await fetchAutenticado(`/api/produtos/${produtoSelecionado.id}`, {
         method: 'DELETE',
       });
       const json = await resposta.json();
@@ -124,14 +133,51 @@ export default function ConsultarProdutos() {
     }
   };
 
+  const handleReativarProduto = async () => {
+    if (!produtoSelecionado) return;
+    setAcaoCarregando(true);
+    try {
+      const resposta = await fetchAutenticado(`/api/produtos/${produtoSelecionado.id}/reativar`, {
+        method: 'PATCH',
+      });
+      const json = await resposta.json();
+      if (json.success) {
+        mostrarToast(json.message, 'sucesso');
+        setIsDetailsOpen(false);
+        setProdutoSelecionado(null);
+        await carregarProdutos();
+      } else {
+        mostrarToast(json.message, 'erro');
+      }
+    } catch {
+      mostrarToast('Falha na conexão com o servidor.', 'erro');
+    } finally {
+      setAcaoCarregando(false);
+    }
+  };
+
   return (
     <div className={styles.layout}>
       <Sidebar itemAtivo="consulta" aberto={isSidebarOpen} onFechar={() => setIsSidebarOpen(false)} />
       <div className={styles.conteudoPrincipal}>
         <Header titulo="Consultar Produtos" onMenuClique={() => setIsSidebarOpen(true)} />
         <main className={styles.main}>
-          <div className={styles.painelBusca}>
-            <SearchInput valor={termoBusca} onChange={setTermoBusca} />
+          <div className={styles.painelTop}>
+            <div className={styles.painelBusca}>
+              <SearchInput valor={termoBusca} onChange={setTermoBusca} />
+            </div>
+
+            {eGerenteOuSuperior && (
+              <label className={styles.toggleInativos}>
+                <input
+                  type="checkbox"
+                  className={styles.toggleInput}
+                  checked={incluirInativos}
+                  onChange={(e) => setIncluirInativos(e.target.checked)}
+                />
+                Exibir produtos inativos
+              </label>
+            )}
           </div>
 
           {carregando ? (
@@ -156,9 +202,29 @@ export default function ConsultarProdutos() {
           <div className={styles.modalDetalhes}>
             <div className={styles.detalhesGrid}>
               <div className={styles.detalheItem}>
+                <span className={styles.detalheLabel}>Status:</span>
+                <div>
+                  <span className={produtoSelecionado.status === 'INATIVO' ? styles.badgeInativo : styles.badgeAtivo}>
+                    {produtoSelecionado.status || 'ATIVO'}
+                  </span>
+                </div>
+              </div>
+              <div className={styles.detalheItem}>
                 <span className={styles.detalheLabel}>Nome do Produto:</span>
                 <strong className={styles.detalheValor}>{produtoSelecionado.nome}</strong>
               </div>
+              {produtoSelecionado.descricao && (
+                <div className={styles.detalheItem}>
+                  <span className={styles.detalheLabel}>Descrição:</span>
+                  <p className={styles.detalheValor}>{produtoSelecionado.descricao}</p>
+                </div>
+              )}
+              {produtoSelecionado.preco !== undefined && (
+                <div className={styles.detalheItem}>
+                  <span className={styles.detalheLabel}>Preço Unitário:</span>
+                  <strong className={styles.detalheValor}>{formatarPreco(produtoSelecionado.preco)}</strong>
+                </div>
+              )}
               <div className={styles.detalheItem}>
                 <span className={styles.detalheLabel}>Quantidade em Estoque:</span>
                 <strong className={styles.detalheValorQtd}>{formatarQuantidade(produtoSelecionado.quantidade)} unidades</strong>
@@ -200,12 +266,26 @@ export default function ConsultarProdutos() {
                 Fechar
               </Button>
               <div className={styles.grupoAcoesApropriadas}>
-                <Button variante="perigo" onClick={handleExcluirClique}>
-                  Excluir
-                </Button>
-                <Button variante="primario" onClick={handleEditarClique}>
-                  Editar
-                </Button>
+                {produtoSelecionado.status === 'INATIVO' ? (
+                  eGerenteOuSuperior && (
+                    <Button variante="primario" onClick={handleReativarProduto} loading={acaoCarregando}>
+                      Reativar Produto
+                    </Button>
+                  )
+                ) : (
+                  <>
+                    {eGerenteOuSuperior && (
+                      <Button variante="perigo" onClick={handleExcluirClique} disabled={acaoCarregando}>
+                        Desativar
+                      </Button>
+                    )}
+                    {eFuncionarioOuSuperior && (
+                      <Button variante="primario" onClick={handleEditarClique} disabled={acaoCarregando}>
+                        Editar
+                      </Button>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -228,11 +308,11 @@ export default function ConsultarProdutos() {
         )}
       </Modal>
 
-      {/* Modal de Exclusão */}
+      {/* Modal de Desativação */}
       <ConfirmDialog
         aberto={isDeleteOpen}
-        titulo="Confirmar Exclusão"
-        mensagem={produtoSelecionado ? `Tem certeza de que deseja excluir o produto "${produtoSelecionado.nome}" do estoque? Esta ação não pode ser desfeita.` : ''}
+        titulo="Confirmar Desativação"
+        mensagem={produtoSelecionado ? `Tem certeza de que deseja desativar o produto "${produtoSelecionado.nome}" do estoque?` : ''}
         onConfirmar={handleConfirmarExclusao}
         onCancelar={() => setIsDeleteOpen(false)}
       />
@@ -246,3 +326,4 @@ export default function ConsultarProdutos() {
     </div>
   );
 }
+

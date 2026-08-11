@@ -99,11 +99,13 @@ const LocationManager: React.FC<LocationManagerProps> = ({ onToast }) => {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     carregarLocais();
   }, [carregarLocais]);
 
   useEffect(() => {
     if (abaAtiva === 'corredores') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       carregarCorredores(filtroLocalCorredores || undefined);
     }
   }, [abaAtiva, filtroLocalCorredores, carregarCorredores]);
@@ -111,6 +113,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ onToast }) => {
   useEffect(() => {
     if (abaAtiva === 'gavetas') {
       if (filtroCorredorGavetas) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         carregarGavetas(filtroCorredorGavetas);
       } else {
         carregarGavetas();
@@ -120,6 +123,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ onToast }) => {
 
   useEffect(() => {
     if (abaAtiva === 'gavetas' && filtroLocalGavetas) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       carregarCorredoresDoLocalGavetas(filtroLocalGavetas);
     } else {
       setCorredoresDoLocalGavetas([]);

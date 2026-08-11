@@ -96,6 +96,39 @@
   color: var(--color-primaria);
 }
 
+.trInativo {
+  opacity: 0.75;
+  background-color: #F3F4F6 !important;
+}
+
+.badgeAtivo {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #DCFCE7;
+  color: #166534;
+}
+
+.badgeInativo {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #F3F4F6;
+  color: #6B7280;
+}
+
+.tdPreco {
+  text-align: right;
+  font-weight: 500;
+  color: var(--color-texto-principal);
+}
+
 .tdData {
   color: var(--color-texto-secundario);
   font-size: var(--font-size-auxiliar);

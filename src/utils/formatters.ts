@@ -26,3 +26,11 @@ export function formatarQuantidade(quantidade: number): string {
   }
   return quantidade.toLocaleString('pt-BR');
 }
+
+export function formatarPreco(preco?: number): string {
+  if (preco === undefined || preco === null || isNaN(preco)) {
+    return '-';
+  }
+  return preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+

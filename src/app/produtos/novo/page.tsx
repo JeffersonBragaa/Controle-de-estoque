@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Header, Sidebar, ProductForm, Toast } from '@/components';
 import { useToast } from '@/hooks';
 import type { ProdutoFormData } from '@/types';
+import { fetchAutenticado } from '@/contexts/AuthContext';
 import styles from './page.module.css';
 
 export default function NovoProduto() {
@@ -16,7 +17,7 @@ export default function NovoProduto() {
   const handleSubmit = async (dados: ProdutoFormData) => {
     setCarregando(true);
     try {
-      const resposta = await fetch('/api/produtos', {
+      const resposta = await fetchAutenticado('/api/produtos', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,9 +28,9 @@ export default function NovoProduto() {
       const json = await resposta.json();
       if (json.success) {
         mostrarToast(json.message, 'sucesso');
-        // Redireciona para a home após um breve delay para exibir o Toast
+        // Redireciona para a consulta após um breve delay para exibir o Toast
         setTimeout(() => {
-          router.push('/');
+          router.push('/produtos');
         }, 1500);
       } else {
         mostrarToast(json.message, 'erro');

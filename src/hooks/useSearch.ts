@@ -11,7 +11,11 @@ export function useSearch(produtos: Produto[]) {
       return produtos;
     }
     return produtos.filter((produto) =>
-      normalizarTexto(produto.nome).includes(termoNormalizado)
+      normalizarTexto(produto.nome).includes(termoNormalizado) ||
+      (produto.descricao && normalizarTexto(produto.descricao).includes(termoNormalizado)) ||
+      normalizarTexto(produto.local).includes(termoNormalizado) ||
+      normalizarTexto(produto.corredor).includes(termoNormalizado) ||
+      normalizarTexto(produto.gaveta).includes(termoNormalizado)
     );
   }, [produtos, termoBusca]);
 

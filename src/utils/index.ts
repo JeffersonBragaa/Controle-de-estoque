@@ -1,1 +1,2 @@
-export { formatarData, normalizarTexto, formatarQuantidade } from './formatters';
+export { formatarData, normalizarTexto, formatarQuantidade, formatarPreco } from './formatters';
+

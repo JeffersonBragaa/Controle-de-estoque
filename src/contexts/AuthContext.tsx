@@ -74,7 +74,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Agendar refresh automático do token (a cada 13 min para token de 15min)
-  const agendarRefresh = useCallback(() => {
+  const agendarRefreshRef = useRef<() => void>(() => {});
+  // eslint-disable-next-line react-hooks/refs
+  agendarRefreshRef.current = () => {
     if (refreshTimerRef.current) {
       clearTimeout(refreshTimerRef.current);
     }
@@ -90,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const data = await response.json();
           if (data.success && data.data?.accessToken) {
             setAccessToken(data.data.accessToken);
-            agendarRefresh(); // Re-agendar
+            agendarRefreshRef.current(); // Re-agendar
           }
         } else {
           // Token expirou — deslogar
@@ -101,6 +103,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Falha silenciosa no refresh
       }
     }, 13 * 60 * 1000); // 13 minutos
+  };
+
+  const agendarRefresh = useCallback(() => {
+    agendarRefreshRef.current();
   }, []);
 
   // Buscar dados do usuário autenticado

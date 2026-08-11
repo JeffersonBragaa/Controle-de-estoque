@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Produto } from '@/types';
-import { formatarQuantidade, formatarData } from '@/utils';
+import { formatarQuantidade, formatarPreco, formatarData } from '@/utils';
 import styles from './ProductList.module.css';
 
 export interface ProductListProps {
@@ -36,61 +36,86 @@ const ProductList: React.FC<ProductListProps> = ({ produtos, onSelecionar }) => 
       <table className={styles.tabela}>
         <thead>
           <tr>
+            <th className={styles.th}>Status</th>
             <th className={styles.th}>Nome</th>
+            <th className={`${styles.th} ${styles.thDireita}`}>Preço</th>
             <th className={`${styles.th} ${styles.thDireita}`}>Qtd</th>
             <th className={styles.th}>Local de Armazenamento</th>
             <th className={styles.th}>Última Atualização</th>
           </tr>
         </thead>
         <tbody>
-          {produtos.map((produto) => (
-            <tr
-              key={produto.id}
-              className={styles.tr}
-              onClick={() => onSelecionar(produto)}
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && onSelecionar(produto)}
-            >
-              <td className={`${styles.td} ${styles.tdNome}`}>{produto.nome}</td>
-              <td className={`${styles.td} ${styles.tdQuantidade}`}>
-                {formatarQuantidade(produto.quantidade)}
-              </td>
-              <td className={styles.td}>
-                {produto.local} • {produto.corredor} • {produto.gaveta}
-              </td>
-              <td className={`${styles.td} ${styles.tdData}`}>
-                {formatarData(produto.atualizadoEm)}
-              </td>
-            </tr>
-          ))}
+          {produtos.map((produto) => {
+            const isInativo = produto.status === 'INATIVO';
+            return (
+              <tr
+                key={produto.id}
+                className={`${styles.tr} ${isInativo ? styles.trInativo : ''}`}
+                onClick={() => onSelecionar(produto)}
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && onSelecionar(produto)}
+              >
+                <td className={styles.td}>
+                  <span className={isInativo ? styles.badgeInativo : styles.badgeAtivo}>
+                    {produto.status || 'ATIVO'}
+                  </span>
+                </td>
+                <td className={`${styles.td} ${styles.tdNome}`}>{produto.nome}</td>
+                <td className={`${styles.td} ${styles.tdPreco}`}>
+                  {formatarPreco(produto.preco)}
+                </td>
+                <td className={`${styles.td} ${styles.tdQuantidade}`}>
+                  {formatarQuantidade(produto.quantidade)}
+                </td>
+                <td className={styles.td}>
+                  {produto.local} • {produto.corredor} • {produto.gaveta}
+                </td>
+                <td className={`${styles.td} ${styles.tdData}`}>
+                  {formatarData(produto.atualizadoEm)}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
       
       {/* Visualização de Cards para Mobile */}
       <div className={styles.cardsMobile}>
-        {produtos.map((produto) => (
-          <div
-            key={produto.id}
-            className={styles.cardMobile}
-            onClick={() => onSelecionar(produto)}
-            tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && onSelecionar(produto)}
-          >
-            <div className={styles.cardHeader}>
-              <h4 className={styles.cardNome}>{produto.nome}</h4>
-              <span className={styles.cardQuantidade}>
-                {formatarQuantidade(produto.quantidade)} un
-              </span>
+        {produtos.map((produto) => {
+          const isInativo = produto.status === 'INATIVO';
+          return (
+            <div
+              key={produto.id}
+              className={`${styles.cardMobile} ${isInativo ? styles.trInativo : ''}`}
+              onClick={() => onSelecionar(produto)}
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && onSelecionar(produto)}
+            >
+              <div className={styles.cardHeader}>
+                <div>
+                  <h4 className={styles.cardNome}>{produto.nome}</h4>
+                  <span className={isInativo ? styles.badgeInativo : styles.badgeAtivo} style={{ marginTop: 4 }}>
+                    {produto.status || 'ATIVO'}
+                  </span>
+                </div>
+                <span className={styles.cardQuantidade}>
+                  {formatarQuantidade(produto.quantidade)} un
+                </span>
+              </div>
+              <div className={styles.cardDetalhes}>
+                {produto.preco !== undefined && (
+                  <p><span>Preço:</span> {formatarPreco(produto.preco)}</p>
+                )}
+                <p><span>Localização:</span> {produto.local} • {produto.corredor} • {produto.gaveta}</p>
+                <p className={styles.cardData}><span>Atualizado em:</span> {formatarData(produto.atualizadoEm)}</p>
+              </div>
             </div>
-            <div className={styles.cardDetalhes}>
-              <p><span>Localização:</span> {produto.local} • {produto.corredor} • {produto.gaveta}</p>
-              <p className={styles.cardData}><span>Atualizado em:</span> {formatarData(produto.atualizadoEm)}</p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 };
 
 export default ProductList;
+

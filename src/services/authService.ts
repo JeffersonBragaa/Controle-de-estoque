@@ -158,6 +158,7 @@ export async function registrar(
 // REFRESH TOKEN
 // ============================================================
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function refresh(
   currentRefreshToken: string,
   ip: string | null,
