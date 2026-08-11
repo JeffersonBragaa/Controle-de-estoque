@@ -77,7 +77,11 @@ export type AcaoAuditoria =
   | 'RECUPERACAO_SENHA_SOLICITADA'
   | 'RECUPERACAO_SENHA_CONCLUIDA'
   | 'CRIACAO_USUARIO'
-  | 'EXCLUSAO_USUARIO';
+  | 'EXCLUSAO_USUARIO'
+  | 'CRIACAO_PRODUTO'
+  | 'ALTERACAO_PRODUTO'
+  | 'DESATIVACAO_PRODUTO'
+  | 'REATIVACAO_PRODUTO';
 
 export interface PasswordReset {
   id: string;

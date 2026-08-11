@@ -1,17 +1,29 @@
+// ============================================================
+// Tipos de Produto
+// ============================================================
+
+export type StatusProduto = 'ATIVO' | 'INATIVO';
+
 export interface Produto {
   id: string;
   nome: string;
+  descricao?: string;
+  preco?: number;
   quantidade: number;
   local: string;
   corredor: string;
   gaveta: string;
   observacao?: string;
+  status: StatusProduto;
+  userId?: string;
   criadoEm: string;
   atualizadoEm: string;
 }
 
 export interface ProdutoFormData {
   nome: string;
+  descricao?: string;
+  preco?: number;
   quantidade: number;
   local: string;
   corredor: string;

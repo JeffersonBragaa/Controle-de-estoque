@@ -1,10 +1,29 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAuthUser } from '@/lib/auth/getAuthUser';
+import { hasPermission } from '@/lib/auth/constants';
 import * as ProdutoService from '@/services/produtoService';
 import type { ProdutoFormData } from '@/types';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const resposta = await ProdutoService.buscarTodos();
+    const authUser = await getAuthUser(request);
+    if (!authUser) {
+      return NextResponse.json(
+        { success: false, message: 'Autenticação necessária.' },
+        { status: 401 }
+      );
+    }
+
+    const incluirInativos = request.nextUrl.searchParams.get('incluirInativos') === 'true';
+
+    if (incluirInativos && !hasPermission(authUser.role, 'GERENTE')) {
+      return NextResponse.json(
+        { success: false, message: 'Permissão insuficiente para visualizar produtos inativos.' },
+        { status: 403 }
+      );
+    }
+
+    const resposta = await ProdutoService.buscarTodos(incluirInativos);
     if (!resposta.success) {
       return NextResponse.json(resposta, { status: 400 });
     }
@@ -17,10 +36,30 @@ export async function GET() {
   }
 }
 
-export async function POST(requisicao: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const dados: ProdutoFormData = await requisicao.json();
-    const resposta = await ProdutoService.cadastrarProduto(dados);
+    const authUser = await getAuthUser(request);
+    if (!authUser) {
+      return NextResponse.json(
+        { success: false, message: 'Autenticação necessária.' },
+        { status: 401 }
+      );
+    }
+
+    if (!hasPermission(authUser.role, 'FUNCIONARIO')) {
+      return NextResponse.json(
+        { success: false, message: 'Permissão insuficiente para cadastrar produtos.' },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+    if (body && typeof body === 'object') {
+      delete (body as Record<string, unknown>).userId;
+    }
+    const dados: ProdutoFormData = body as ProdutoFormData;
+
+    const resposta = await ProdutoService.cadastrarProduto(dados, authUser.sub);
     if (!resposta.success) {
       return NextResponse.json(resposta, { status: 400 });
     }

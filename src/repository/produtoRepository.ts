@@ -1,11 +1,22 @@
 import { supabase } from '@/lib/supabase';
 import type { Produto } from '@/types';
 
-export async function listarTodos(): Promise<Produto[]> {
-  const { data, error } = await supabase
+/**
+ * Lista produtos do banco de dados.
+ * Por padrão, retorna apenas produtos ativos (status = 'ATIVO').
+ * @param incluirInativos Se true, retorna todos os produtos independente do status.
+ */
+export async function listarTodos(incluirInativos: boolean = false): Promise<Produto[]> {
+  let query = supabase
     .from('produtos')
     .select('*')
     .order('nome', { ascending: true });
+
+  if (!incluirInativos) {
+    query = query.eq('status', 'ATIVO');
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('Erro no Supabase ao listarTodos:', error);
@@ -15,6 +26,10 @@ export async function listarTodos(): Promise<Produto[]> {
   return data as Produto[];
 }
 
+/**
+ * Busca um produto pelo seu ID único.
+ * Retorna undefined caso o produto não seja encontrado.
+ */
 export async function buscarPorId(id: string): Promise<Produto | undefined> {
   const { data, error } = await supabase
     .from('produtos')
@@ -23,7 +38,7 @@ export async function buscarPorId(id: string): Promise<Produto | undefined> {
     .single();
 
   if (error) {
-    if (error.code === 'PGRST116') return undefined; // Não encontrou 1 registro
+    if (error.code === 'PGRST116') return undefined; // 1 registro não encontrado
     console.error('Erro no Supabase ao buscarPorId:', error);
     throw new Error('Erro ao buscar produto por ID no banco.');
   }
@@ -31,10 +46,12 @@ export async function buscarPorId(id: string): Promise<Produto | undefined> {
   return data as Produto;
 }
 
+/**
+ * Busca produto por nome exato (case insensitive).
+ * Utilizado para verificação de duplicidade.
+ */
 export async function buscarPorNome(nome: string): Promise<Produto | undefined> {
   const nomeNormalizado = nome.trim().toLowerCase();
-  // Busca na tabela produtos onde lower(nome) = nomeNormalizado
-  // Como Supabase (PostgREST) tem o filtro ilike para case insensitive, podemos usar ele
   const { data, error } = await supabase
     .from('produtos')
     .select('*')
@@ -50,10 +67,28 @@ export async function buscarPorNome(nome: string): Promise<Produto | undefined> 
   return data as Produto | undefined;
 }
 
+/**
+ * Insere um novo produto completo no banco de dados.
+ * Persiste todos os campos do modelo, incluindo status e userId quando fornecido.
+ */
 export async function salvar(produto: Produto): Promise<void> {
   const { error } = await supabase
     .from('produtos')
-    .insert([produto]);
+    .insert([{
+      id: produto.id,
+      nome: produto.nome,
+      descricao: produto.descricao ?? null,
+      preco: produto.preco ?? null,
+      quantidade: produto.quantidade,
+      local: produto.local,
+      corredor: produto.corredor,
+      gaveta: produto.gaveta,
+      observacao: produto.observacao ?? null,
+      status: produto.status ?? 'ATIVO',
+      userId: produto.userId ?? null,
+      criadoEm: produto.criadoEm,
+      atualizadoEm: produto.atualizadoEm,
+    }]);
 
   if (error) {
     console.error('Erro no Supabase ao salvar:', error);
@@ -61,16 +96,23 @@ export async function salvar(produto: Produto): Promise<void> {
   }
 }
 
+/**
+ * Atualiza um produto existente no banco de dados.
+ * Atualiza apenas os campos permitidos, preservando userId e criadoEm originais.
+ */
 export async function atualizar(produtoAtualizado: Produto): Promise<void> {
   const { error } = await supabase
     .from('produtos')
     .update({
       nome: produtoAtualizado.nome,
+      descricao: produtoAtualizado.descricao ?? null,
+      preco: produtoAtualizado.preco ?? null,
       quantidade: produtoAtualizado.quantidade,
       local: produtoAtualizado.local,
       corredor: produtoAtualizado.corredor,
       gaveta: produtoAtualizado.gaveta,
-      observacao: produtoAtualizado.observacao,
+      observacao: produtoAtualizado.observacao ?? null,
+      status: produtoAtualizado.status,
       atualizadoEm: produtoAtualizado.atualizadoEm,
     })
     .eq('id', produtoAtualizado.id);
@@ -81,14 +123,29 @@ export async function atualizar(produtoAtualizado: Produto): Promise<void> {
   }
 }
 
-export async function excluir(id: string): Promise<void> {
+/**
+ * Desativação lógica de um produto (status = 'INATIVO').
+ * Não remove o registro fisicamente do banco de dados.
+ */
+export async function desativar(id: string): Promise<void> {
   const { error } = await supabase
     .from('produtos')
-    .delete()
+    .update({
+      status: 'INATIVO',
+      atualizadoEm: new Date().toISOString(),
+    })
     .eq('id', id);
 
   if (error) {
-    console.error('Erro no Supabase ao excluir:', error);
-    throw new Error('Erro ao excluir produto no banco.');
+    console.error('Erro no Supabase ao desativar:', error);
+    throw new Error('Erro ao desativar produto no banco.');
   }
 }
+
+/**
+ * Alias para desativar(). Mantido para compatibilidade com os chamadores existentes.
+ */
+export async function excluir(id: string): Promise<void> {
+  return desativar(id);
+}
+
