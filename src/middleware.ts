@@ -11,7 +11,7 @@ const PUBLIC_PAGE_ROUTES = ['/login', '/forgot-password', '/reset-password'];
 // Rotas de API públicas (não precisam de auth)
 const PUBLIC_API_ROUTES = [
   '/api/auth/login',
-  '/api/auth/register',
+  '/api/auth/setup-admin',
   '/api/auth/refresh',
   '/api/auth/forgot-password',
   '/api/auth/reset-password',

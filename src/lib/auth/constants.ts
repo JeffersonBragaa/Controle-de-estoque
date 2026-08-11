@@ -20,10 +20,10 @@ export const PUBLIC_ROUTES = [
   '/reset-password',
 ];
 
-/** Rotas de API públicas que não exigem autenticação */
+/** Rotas de API públicas que não exigem autenticação Bearer */
 export const PUBLIC_API_ROUTES = [
   '/api/auth/login',
-  '/api/auth/register',
+  '/api/auth/setup-admin',
   '/api/auth/refresh',
   '/api/auth/forgot-password',
   '/api/auth/reset-password',

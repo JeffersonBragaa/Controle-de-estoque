@@ -85,13 +85,22 @@ export async function desativarTodasDoUsuario(userId: string): Promise<void> {
   }
 }
 
-export async function atualizarAtividade(id: string, refreshToken: string): Promise<void> {
+export async function atualizarAtividade(
+  id: string,
+  refreshToken: string,
+  ip?: string | null,
+  userAgent?: string | null,
+): Promise<void> {
+  const campos: Record<string, unknown> = {
+    ultimaAtividade: new Date().toISOString(),
+    refreshToken,
+  };
+  if (ip !== undefined) campos.ip = ip;
+  if (userAgent !== undefined) campos.userAgent = userAgent;
+
   const { error } = await supabase
     .from('sessoes')
-    .update({
-      ultimaAtividade: new Date().toISOString(),
-      refreshToken,
-    })
+    .update(campos)
     .eq('id', id);
 
   if (error) {

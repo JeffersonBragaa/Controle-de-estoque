@@ -158,7 +158,6 @@ export async function registrar(
 // REFRESH TOKEN
 // ============================================================
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function refresh(
   currentRefreshToken: string,
   ip: string | null,
@@ -201,8 +200,8 @@ export async function refresh(
     const newAccessToken = await gerarAccessToken(jwtPayload);
     const newRefreshToken = await gerarRefreshToken(jwtPayload);
 
-    // Atualizar sessão com novo refresh token
-    await SessionRepository.atualizarAtividade(sessao.id, newRefreshToken);
+    // Atualizar sessão com novo refresh token, ip e userAgent
+    await SessionRepository.atualizarAtividade(sessao.id, newRefreshToken, ip, userAgent);
 
     return {
       success: true,
