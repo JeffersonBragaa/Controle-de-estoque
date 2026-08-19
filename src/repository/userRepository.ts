@@ -18,15 +18,20 @@ export async function buscarPorId(id: string): Promise<Usuario | undefined> {
 }
 
 export async function buscarPorEmail(email: string): Promise<Usuario | undefined> {
+  const emailNorm = email.trim().toLowerCase();
   const { data, error } = await supabase
     .from('usuarios')
     .select('*')
-    .eq('email', email.trim().toLowerCase())
+    .eq('email', emailNorm)
     .maybeSingle();
 
   if (error) {
-    console.error('Erro no Supabase ao buscarPorEmail:', error);
-    throw new Error('Erro ao buscar usuário por email.');
+    console.error('[USER_REPO] Erro no Supabase ao buscarPorEmail:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+    });
+    throw new Error(`Erro ao buscar usuário por email: ${error.message}`);
   }
 
   return data as Usuario | undefined;

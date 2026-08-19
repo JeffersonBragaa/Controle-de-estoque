@@ -7,8 +7,13 @@ export async function salvar(sessao: Sessao): Promise<void> {
     .insert([sessao]);
 
   if (error) {
-    console.error('Erro no Supabase ao salvar sessao:', error);
-    throw new Error('Erro ao salvar sessão no banco.');
+    console.error('[SESSION_REPO] Erro no Supabase ao salvar sessao:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      userId: sessao.userId,
+    });
+    throw new Error(`Erro ao salvar sessão no banco: ${error.message}`);
   }
 }
 

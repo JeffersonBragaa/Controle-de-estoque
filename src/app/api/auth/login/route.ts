@@ -9,7 +9,11 @@ export async function POST(request: NextRequest) {
     const dados: LoginFormData = await request.json();
     const { ip, userAgent } = getClientInfo(request);
 
+    const emailRecebido = dados.email ? dados.email.trim().toLowerCase() : '(vazio)';
+    console.log('[LOGIN_ROUTE] Recebida requisição de login para:', emailRecebido);
+
     if (!dados.email || !dados.senha) {
+      console.log('[LOGIN_ROUTE] Email ou senha não fornecidos no body');
       return NextResponse.json(
         { success: false, message: 'Email e senha são obrigatórios.' },
         { status: 400 },
@@ -17,6 +21,11 @@ export async function POST(request: NextRequest) {
     }
 
     const resposta = await AuthService.login(dados, ip, userAgent);
+    console.log('[LOGIN_ROUTE] Resposta do AuthService:', {
+      success: resposta.success,
+      message: resposta.message,
+      hasData: !!resposta.data,
+    });
 
     if (!resposta.success || !resposta.data) {
       return NextResponse.json(resposta, { status: 401 });
@@ -44,7 +53,11 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch {
+  } catch (error) {
+    console.error(
+      '[LOGIN_ROUTE] EXCECAO no route handler de login:',
+      error instanceof Error ? error.message : String(error),
+    );
     return NextResponse.json(
       { success: false, message: 'Erro interno no servidor.' },
       { status: 500 },

@@ -15,6 +15,7 @@ const PUBLIC_API_ROUTES = [
   '/api/auth/refresh',
   '/api/auth/forgot-password',
   '/api/auth/reset-password',
+  '/api/auth/diagnostico', // TEMPORÁRIO — remover após diagnóstico
 ];
 
 // Rotas de assets estáticos e Next.js internals (ignorar)

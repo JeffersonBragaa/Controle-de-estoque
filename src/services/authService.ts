@@ -34,17 +34,32 @@ export async function login(
   userAgent: string | null,
 ): Promise<ApiResponse<{ usuario: UsuarioPublico; tokens: AuthTokens }>> {
   try {
+    const emailNorm = dados.email ? dados.email.trim().toLowerCase() : '';
+    console.log('[AUTH_LOGIN_TRACE] 1. Início login para email:', emailNorm);
+
     const usuario = await UserRepository.buscarPorEmail(dados.email);
+    console.log('[AUTH_LOGIN_TRACE] 2. buscarPorEmail resultado:', {
+      encontrado: !!usuario,
+      ativo: usuario?.ativo,
+      role: usuario?.role,
+      idExiste: !!usuario?.id,
+      hashExiste: !!usuario?.senha,
+      hashTamanho: usuario?.senha?.length,
+    });
 
     if (!usuario) {
+      console.log('[AUTH_LOGIN_TRACE] 2a. Usuário não encontrado no banco');
       return { success: false, message: 'Email ou senha inválidos.' };
     }
 
     if (!usuario.ativo) {
+      console.log('[AUTH_LOGIN_TRACE] 2b. Usuário inativo');
       return { success: false, message: 'Usuário desativado. Entre em contato com o administrador.' };
     }
 
     const senhaValida = await verificarSenha(dados.senha, usuario.senha);
+    console.log('[AUTH_LOGIN_TRACE] 3. verificarSenha resultado:', { senhaValida });
+
     if (!senhaValida) {
       return { success: false, message: 'Email ou senha inválidos.' };
     }
@@ -58,12 +73,15 @@ export async function login(
       sessionId,
     };
 
+    console.log('[AUTH_LOGIN_TRACE] 4. Gerando JWTs...');
     const accessToken = await gerarAccessToken(jwtPayload);
     const refreshToken = await gerarRefreshToken(jwtPayload);
+    console.log('[AUTH_LOGIN_TRACE] 5. JWTs gerados com sucesso');
 
     const agora = new Date();
     const expiraEm = new Date(agora.getTime() + REFRESH_TOKEN_EXPIRY * 60 * 1000);
 
+    console.log('[AUTH_LOGIN_TRACE] 6. Salvando sessão no banco...');
     await SessionRepository.salvar({
       id: sessionId,
       userId: usuario.id,
@@ -75,6 +93,7 @@ export async function login(
       criadoEm: agora.toISOString(),
       expiraEm: expiraEm.toISOString(),
     });
+    console.log('[AUTH_LOGIN_TRACE] 7. Sessão salva com sucesso');
 
     // Audit log
     await AuditLogRepository.registrar(usuario.id, 'LOGIN', null, ip, userAgent);
@@ -87,7 +106,14 @@ export async function login(
         tokens: { accessToken, refreshToken },
       },
     };
-  } catch {
+  } catch (error) {
+    console.error(
+      '[AUTH_LOGIN_TRACE] EXCECAO no fluxo de login:',
+      error instanceof Error ? error.message : String(error),
+    );
+    if (error instanceof Error && error.stack) {
+      console.error('[AUTH_LOGIN_TRACE] Stack:', error.stack);
+    }
     return { success: false, message: 'Erro ao realizar login.' };
   }
 }
